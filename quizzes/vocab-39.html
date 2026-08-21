@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>日语词汇测试</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#fff; --ink:#222; --muted:#777;
+    --accent:#d76b5f; --good:#2f8f5b; --bad:#c94b4b; --line:#e7e1d7;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh;
+  }
+  .wrap{max-width:680px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+  h1{font-size:26px;margin:4px 0 6px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  button{font:inherit;-webkit-tap-highlight-color:transparent}
+  .tab,.action{
+    border:0;border-radius:14px;padding:13px 10px;background:#e8e3da;color:#444;font-weight:700;
+  }
+  .tab.active{background:var(--accent);color:white}
+  .card{
+    background:var(--card);border-radius:22px;padding:22px 18px;
+    box-shadow:0 8px 30px rgba(0,0,0,.07)
+  }
+  .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin-bottom:18px}
+  .prompt-label{text-align:center;color:var(--muted);font-size:14px}
+  .question{text-align:center;font-size:34px;font-weight:800;margin:12px 0 22px;line-height:1.35}
+  .options{display:grid;gap:11px}
+  .option{
+    width:100%;text-align:left;border:2px solid var(--line);background:#fff;border-radius:15px;
+    padding:15px 16px;font-size:18px;min-height:56px
+  }
+  .option:active{transform:scale(.99)}
+  .option.correct{border-color:var(--good);background:#edf8f1;color:#17673c}
+  .option.wrong{border-color:var(--bad);background:#fff0f0;color:#8f2828}
+  .option:disabled{opacity:1}
+  .feedback{min-height:48px;margin-top:14px;text-align:center;font-weight:700;line-height:1.5}
+  .next{width:100%;background:var(--accent);color:#fff;margin-top:8px;display:none}
+  .progress{height:8px;background:#e9e4dc;border-radius:999px;overflow:hidden;margin:16px 0 0}
+  .bar{height:100%;background:var(--accent);width:0;transition:.25s}
+  .result{text-align:center;display:none}
+  .score{font-size:54px;font-weight:900;margin:12px 0}
+  .small{color:var(--muted)}
+  .result .action{width:100%;background:var(--accent);color:white;margin-top:16px}
+  .footer{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>日语词汇测试</h1>
+  <div class="sub">原有 23 词 + 今日 16 词 · 共 39 词</div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab1">第一部分：假名 → 中文</button>
+    <button class="tab" id="tab2">第二部分：中文 → 假名</button>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="meta"><span id="partName"></span><span id="counter"></span></div>
+    <div class="prompt-label" id="promptLabel"></div>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="action next" id="nextBtn">下一题</button>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <div class="card result" id="resultCard">
+    <div class="small">本部分完成</div>
+    <div class="score" id="scoreText"></div>
+    <div id="resultText"></div>
+    <button class="action" id="restartBtn">重新测试本部分</button>
+  </div>
+
+  <div class="footer">可直接用 iPhone Safari 打开；也可“添加到主屏幕”。</div>
+</div>
+
+<script>
+const vocab = [
+  {jp:"わしょく", zh:"日式料理"},
+  {jp:"やきとり", zh:"烤鸡肉串"},
+  {jp:"じゃ", zh:"那么；那"},
+  {jp:"すこし", zh:"一点；少量"},
+  {jp:"（せきが）あきます", zh:"（座位）空着；有空位"},
+  {jp:"もどします", zh:"归还；放回原处"},
+  {jp:"かいぎ", zh:"会议"},
+  {jp:"しりょう", zh:"资料；文件"},
+  {jp:"かいぎしつ", zh:"会议室"},
+  {jp:"ええ？", zh:"诶？真的吗？"},
+  {jp:"コーヒーをいれます", zh:"冲咖啡"},
+  {jp:"ちゅうかりょうり", zh:"中华料理；中国菜"},
+  {jp:"デザート", zh:"甜点"},
+  {jp:"フェスティバル", zh:"节日；庆典"},
+  {jp:"いや（な）", zh:"讨厌的；不喜欢的"},
+  {jp:"ざんねん（な）", zh:"遗憾的；可惜的"},
+  {jp:"もってきます", zh:"带来；拿来"},
+  {jp:"そつぎょうします", zh:"毕业"},
+  {jp:"ぼんおどり", zh:"盂兰盆舞"},
+  {jp:"ぶんかさい", zh:"文化节"},
+  {jp:"さんぽ", zh:"散步"},
+  {jp:"（お）ひるごはん", zh:"午饭"},
+  {jp:"リボン", zh:"丝带；蝴蝶结"},
+  {jp:"こわします", zh:"弄坏；破坏"},
+  {jp:"けります", zh:"踢"},
+  {jp:"あてます", zh:"击中；打中"},
+  {jp:"もうしわけありません", zh:"非常抱歉"},
+  {jp:"しょるい", zh:"文件；资料"},
+  {jp:"よごします", zh:"弄脏"},
+  {jp:"かびん", zh:"花瓶"},
+  {jp:"わります", zh:"打破；打碎"},
+  {jp:"おとします", zh:"使掉下；弄掉"},
+  {jp:"ぶつかります", zh:"撞上；碰撞"},
+  {jp:"たおします", zh:"推倒；弄倒"},
+  {jp:"きをつけます", zh:"小心；注意"},
+  {jp:"やまのぼり", zh:"登山"},
+  {jp:"サーフィン", zh:"冲浪"},
+  {jp:"へいじつ", zh:"工作日；平日"},
+  {jp:"すいています", zh:"不拥挤；空闲"}
+];
+
+let mode = 1, order = [], idx = 0, score = 0, answered = false;
+
+const $ = id => document.getElementById(id);
+const shuffle = arr => [...arr].sort(()=>Math.random()-.5);
+
+function start(m=mode){
+  mode=m; order=shuffle(vocab.map((_,i)=>i)); idx=0; score=0; answered=false;
+  $("quizCard").style.display="block"; $("resultCard").style.display="none";
+  $("tab1").classList.toggle("active",mode===1);
+  $("tab2").classList.toggle("active",mode===2);
+  render();
+}
+function render(){
+  answered=false; $("nextBtn").style.display="none"; $("feedback").textContent="";
+  const item=vocab[order[idx]];
+  $("partName").textContent = mode===1 ? "假名 → 中文" : "中文 → 假名";
+  $("counter").textContent = `${idx+1} / ${vocab.length}`;
+  $("promptLabel").textContent = mode===1 ? "请选择正确的中文意思" : "请选择正确的日语假名";
+  $("question").textContent = mode===1 ? item.jp : item.zh;
+  $("bar").style.width = `${idx/vocab.length*100}%`;
+
+  const correct = mode===1 ? item.zh : item.jp;
+  const pool = vocab.map(v=>mode===1?v.zh:v.jp).filter(x=>x!==correct);
+  const choices = shuffle([correct, ...shuffle(pool).slice(0,3)]);
+
+  $("options").innerHTML="";
+  choices.forEach(text=>{
+    const b=document.createElement("button");
+    b.className="option"; b.textContent=text;
+    b.onclick=()=>choose(b,text,correct);
+    $("options").appendChild(b);
+  });
+}
+function choose(btn, selected, correct){
+  if(answered) return;
+  answered=true;
+  const buttons=[...document.querySelectorAll(".option")];
+  buttons.forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct) b.classList.add("correct");
+  });
+  if(selected===correct){
+    score++; $("feedback").textContent="✓ 回答正确";
+  }else{
+    btn.classList.add("wrong");
+    $("feedback").innerHTML=`✕ 正确答案：<strong>${correct}</strong>`;
+  }
+  $("nextBtn").style.display="block";
+}
+function next(){
+  idx++;
+  if(idx>=vocab.length) finish(); else render();
+}
+function finish(){
+  $("quizCard").style.display="none"; $("resultCard").style.display="block";
+  $("scoreText").textContent=`${score} / ${vocab.length}`;
+  const pct=Math.round(score/vocab.length*100);
+  $("resultText").textContent = pct>=90 ? `正确率 ${pct}%：非常稳！`
+    : pct>=70 ? `正确率 ${pct}%：不错，再复习一下错题。`
+    : `正确率 ${pct}%：再来一轮，很快就记住了。`;
+}
+$("tab1").onclick=()=>start(1);
+$("tab2").onclick=()=>start(2);
+$("nextBtn").onclick=next;
+$("restartBtn").onclick=()=>start(mode);
+start(1);
+</script>
+</body>
+</html>
