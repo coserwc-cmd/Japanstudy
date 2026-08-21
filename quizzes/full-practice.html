@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>三页词汇与敬语测试</title>
+<style>
+:root{
+  --bg:#f4f1eb;--card:#fff;--ink:#252525;--muted:#77736d;
+  --accent:#d9685d;--good:#247b4c;--bad:#b54141;--line:#e7e0d7;
+  --purple:#6656a8;--purple-soft:#f2efff
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif
+}
+.wrap{
+  max-width:720px;margin:auto;
+  padding:calc(18px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))
+}
+.card{background:var(--card);border-radius:22px;padding:20px 16px;box-shadow:0 8px 28px rgba(0,0,0,.07)}
+h1{font-size:28px;margin:0 0 8px}.sub{color:var(--muted);line-height:1.6;margin:0}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-block;border-radius:999px;background:#eee8df;color:#554f48;padding:5px 9px;font-size:12px;font-weight:800}
+.pill.keigo{background:var(--purple-soft);color:var(--purple)}
+.menu{display:grid;gap:10px;margin-top:16px}.menu.two{grid-template-columns:1fr 1fr}
+button{font:inherit;-webkit-tap-highlight-color:transparent}
+.btn{border:0;border-radius:14px;padding:14px 12px;font-weight:800;background:#e9e3da;color:#3b3936}
+.btn.primary{background:var(--accent);color:#fff}.btn.dark{background:#34312e;color:#fff}
+.btn.good{background:var(--good);color:#fff}.btn.purple{background:var(--purple);color:#fff}
+.btn:disabled{opacity:.45}.hidden{display:none!important}
+.filters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.filter{border:0;border-radius:12px;padding:11px 8px;background:#eee8df;font-weight:800;color:#4b4742}
+.filter.active{background:#4b4742;color:#fff}
+.meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:14px;margin-bottom:18px}
+.progress{height:8px;background:#ebe5dc;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.bar{height:100%;background:var(--accent);width:0;transition:.25s}.bar.keigo{background:var(--purple)}
+.prompt-label{text-align:center;color:var(--muted);font-size:14px}
+.category{text-align:center;margin-bottom:8px}
+.prompt{text-align:center;font-size:29px;font-weight:850;line-height:1.45;margin:10px 0 14px;overflow-wrap:anywhere}
+.base{text-align:center;color:var(--muted);font-size:14px;margin-bottom:16px}
+.options{display:grid;gap:10px}
+.option{width:100%;text-align:left;border:2px solid var(--line);background:#fff;border-radius:15px;padding:14px 15px;font-size:17px;min-height:54px}
+.option.correct{border-color:var(--good);background:#edf8f1;color:#17643b}
+.option.wrong{border-color:var(--bad);background:#fff0f0;color:#8b2929}.option:disabled{opacity:1}
+.fill-wrap{display:grid;gap:10px}
+.fill-input{
+  width:100%;border:2px solid var(--line);border-radius:15px;padding:15px 14px;
+  font:inherit;font-size:19px;background:#fff;outline:none
+}
+.fill-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(102,86,168,.12)}
+.fill-input.correct{border-color:var(--good);background:#edf8f1}
+.fill-input.wrong{border-color:var(--bad);background:#fff0f0}
+.feedback{min-height:48px;margin-top:12px;text-align:center;font-weight:800;line-height:1.45}
+.next{width:100%;margin-top:4px}.score{font-size:54px;font-weight:900;text-align:center;margin:8px 0}
+.center{text-align:center}.wrong-list{display:grid;gap:10px;margin-top:16px}
+.wrong-item{background:#fff7f7;border:1px solid #f0caca;border-radius:15px;padding:13px}
+.wrong-q{font-weight:850;margin-bottom:7px}.wrong-a{font-size:14px;line-height:1.55}
+.bad{color:var(--bad)}.good-text{color:var(--good)}
+.note{margin-top:12px;background:#fff7dd;color:#6d591d;border-radius:14px;padding:12px 13px;line-height:1.55;font-size:14px}
+.small{font-size:13px;color:var(--muted);line-height:1.55}
+.keigo-note{background:var(--purple-soft);color:#51438b}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="card" id="home">
+  <h1>三页词汇与敬语测试</h1>
+  <p class="sub">词汇题共89词，另加24道敬语填空题。填空题包含尊敬语和谦让语，不提供选项。</p>
+  <div class="stats">
+    <span class="pill">第1页：28词</span>
+    <span class="pill">第2页：39词</span>
+    <span class="pill">第3页：22词</span>
+    <span class="pill">词汇总计：89词</span>
+    <span class="pill keigo">敬语填空：24题</span>
+  </div>
+
+  <div class="filters">
+    <button class="filter active" data-filter="all">全部词汇</button>
+    <button class="filter" data-filter="1">第1页</button>
+    <button class="filter" data-filter="2">第2页</button>
+    <button class="filter" data-filter="3">第3页</button>
+  </div>
+
+  <div class="menu two">
+    <button class="btn primary" id="startPart1">第一部分<br>假名 → 中文</button>
+    <button class="btn dark" id="startPart2">第二部分<br>中文 → 易混假名</button>
+  </div>
+  <button class="btn purple" id="startKeigo" style="width:100%;margin-top:10px">
+    第三部分：敬语填空<br>尊敬语＋谦让语
+  </button>
+  <button class="btn good" id="resumeWrong" style="width:100%;margin-top:10px">练习已保存错题</button>
+
+  <div class="note">做完后会自动汇总错题，可单独重做。词汇页筛选只影响前两部分，敬语填空始终使用全部24题。</div>
+  <div class="note keigo-note">填空时可输入假名或常见汉字写法。系统会忽略空格、句号和全角／半角差异。</div>
+  <p class="small">动态记分、输入检查和错题集会直接保存在当前浏览器。</p><p class="small"><a href="../index.html" style="color:#6656a8;text-decoration:none;font-weight:700">← 回到学习首页</a></p>
+</section>
+
+<section class="card hidden" id="quiz">
+  <div class="meta"><span id="sessionName"></span><span id="counter"></span></div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="category hidden" id="category"></div>
+  <div class="prompt-label" id="promptLabel"></div>
+  <div class="prompt" id="prompt"></div>
+  <div class="base hidden" id="base"></div>
+
+  <div class="options" id="options"></div>
+
+  <div class="fill-wrap hidden" id="fillWrap">
+    <input class="fill-input" id="fillInput" type="text" inputmode="text"
+           autocomplete="off" autocapitalize="off" spellcheck="false"
+           placeholder="请输入日语答案">
+    <button class="btn purple" id="checkFill">检查答案</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <button class="btn primary next hidden" id="nextBtn">下一题</button>
+</section>
+
+<section class="card hidden" id="result">
+  <div class="center">
+    <span class="pill" id="resultType">本轮完成</span>
+    <div class="score" id="score"></div>
+    <div id="resultMessage"></div>
+  </div>
+  <div class="menu two">
+    <button class="btn good" id="retryWrong">重做本轮错题</button>
+    <button class="btn" id="retryAllWrong">练习全部错题</button>
+  </div>
+  <div class="menu two">
+    <button class="btn" id="restartSame">重新做本部分</button>
+    <button class="btn dark" id="backHome">返回首页</button>
+  </div>
+  <div class="wrong-list" id="wrongList"></div>
+</section>
+</div>
+
+<script src="full-data.js"></script>
+<script src="full-app.js"></script>
+</body>
+</html>
