@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "title": "题库格式示例 · 3 题",
+  "source": {"name": "日和原创格式示例"},
+  "sections": [
+    {"questions": [{"id":"demo-v-01","kind":"choice","subject":"vocab","level":"N3","topic":"漢字読み","prompt":"「予定」の読み方はどれですか。","context":"明日の予定を確認します。","options":["よてい","よってい","よでい","ゆてい"],"answer":"よてい","explanation":"「予定」读作「よてい」，表示计划或安排。"}]},
+    {"questions": [{"id":"demo-g-01","kind":"choice","subject":"grammar","level":"N3","topic":"ようになる","prompt":"毎日練習して、日本語が話せる（　）なりました。","options":["ように","ために","ことを","ところを"],"answer":"ように","explanation":"可能形＋ようになる，表示原本不会的能力逐渐变得能够做到。","point":"动词可能形＋ようになる"}]},
+    {"questions": [{"id":"demo-l-01","kind":"choice","subject":"listening","level":"N3","topic":"ポイント理解","prompt":"話を聞いて、正しい答えを選んでください。","audioText":"明日の待ち合わせですが、駅は工事中なので、駅の前の本屋で会いましょう。時間は午後二時です。どこで会いますか。","options":["本屋","駅の中","学校"],"answer":"本屋","explanation":"因为车站施工，约定在车站前的书店见面。"}]}
+  ]
+}

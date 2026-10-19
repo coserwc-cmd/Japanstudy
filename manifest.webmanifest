@@ -1,0 +1,16 @@
+{
+  "name": "日和 · 日本語 — Japanstudy",
+  "short_name": "日和",
+  "description": "每天一点，学会日语。N5—N3 练习与原创模拟考试。",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f5f0",
+  "theme_color": "#f6f5f0",
+  "lang": "zh-CN",
+  "icons": [
+    {"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
