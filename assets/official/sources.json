@@ -1,0 +1,389 @@
+{
+  "sourceIndex": "https://www.jlpt.jp/cn/samples/sampleindex.html",
+  "sitePolicy": "https://www.jlpt.jp/cn/policy.html",
+  "downloadedAt": "2026-10-19T00:30:53.331695+00:00",
+  "use": "免费教学使用的原卷图文注明官方来源，遵循官网使用规则第 1(4) 条；原版音频不随公开网站发布，仅从官网在线播放或由用户导入本机。",
+  "note": "2012/2018 为出版年份，题目选自真实考试，并非相应年份某一考次的整卷。2012 问题2听力使用官网当前指定的 sample2017 文件。",
+  "questionCounts": {
+    "2012": [
+      33,
+      39,
+      27
+    ],
+    "2018": [
+      35,
+      39,
+      28
+    ]
+  },
+  "files": [
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3G.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3G.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3G.pdf",
+      "bytes": 1451523,
+      "content_type": "application/pdf",
+      "sha256": "2739ba38b98ba697f5a16a1a99eef59b25b9ac0cf573b7730a87c6d6f41e00e8",
+      "pages": 9
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3L.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3L.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3L.pdf",
+      "bytes": 1474875,
+      "content_type": "application/pdf",
+      "sha256": "1da46bddbee5830d5bb8f830efa55c78f7fed711f7b9a6bcda92eb109f041ee4",
+      "pages": 15
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3Q1.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q1.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q1.mp3",
+      "bytes": 3104050,
+      "content_type": "audio/mpeg",
+      "sha256": "4d982b5e5c1af3d883b074790931aa4f30e09ff6ed1144a95ae8439ba4061256",
+      "duration_seconds": 648.071837
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3Q2.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2017/mp3/N3Q2.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2017/mp3/N3Q2.mp3",
+      "bytes": 12005938,
+      "content_type": "audio/mpeg",
+      "sha256": "e8af06e8c9a1c3fa4b22688e64a3951194930f04a16d4200ecc5afd766fd36b6",
+      "duration_seconds": 750.365438
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3Q3.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q3.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q3.mp3",
+      "bytes": 1973076,
+      "content_type": "audio/mpeg",
+      "sha256": "64d2bc8e8e6bbc52348156003523b27cf3386c4863008c86058a195333b30522",
+      "duration_seconds": 430.18449
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3Q4.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q4.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q4.mp3",
+      "bytes": 1073086,
+      "content_type": "audio/mpeg",
+      "sha256": "a7380a3b63ae21aa465d96246530214e1f49df58ac2b2a6d60fde8b5e76b8916",
+      "duration_seconds": 241.162449
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3Q5.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q5.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/mp3/N3Q5.mp3",
+      "bytes": 1569634,
+      "content_type": "audio/mpeg",
+      "sha256": "b176ec4f4b11d8edbba6ccfafca7bbdb38acaecb40c113f0f4069e0bb8a150c5",
+      "duration_seconds": 355.761633
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3R.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3R.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3R.pdf",
+      "bytes": 1031775,
+      "content_type": "application/pdf",
+      "sha256": "64bab971e58cac59dfed6486ff6f8786336bd6a6693ff404fc2721cdb65fd35d",
+      "pages": 12
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3V.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3V.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3V.pdf",
+      "bytes": 1116844,
+      "content_type": "application/pdf",
+      "sha256": "e80bfe5be25d1c06df901a6f1b0f590cd7927160e374c12ded18e8dfb0b4eb79",
+      "pages": 7
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3answer.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3answer.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3answer.pdf",
+      "bytes": 135376,
+      "content_type": "application/pdf",
+      "sha256": "56ef2377e68e2c4565b976cb45375cb07e35f6931de1ccea360af80b124296b7",
+      "pages": 2
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3script.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3script.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3script.pdf",
+      "bytes": 347614,
+      "content_type": "application/pdf",
+      "sha256": "009fec75f51b5331ac59049c1e1b57a5b0ed20268745016fcaead8fef83dd7d0",
+      "pages": 12
+    },
+    {
+      "volume_publication_year": 2012,
+      "path": "2012/N3sheet.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3sheet.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2012/pdf/N3sheet.pdf",
+      "bytes": 706587,
+      "content_type": "application/pdf",
+      "sha256": "bfbc89f3a6c67b5f2f96269af6c8bed60b47ef86f3aa26d37e08bc61f769dc4a",
+      "pages": 3
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3G.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3G.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3G.pdf",
+      "bytes": 1174727,
+      "content_type": "application/pdf",
+      "sha256": "fe4e17dec0eae246839a7a32423e9e9fc3beaca3a2c693bd5445cafd6f0bfc06",
+      "pages": 9
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3L.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3L.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3L.pdf",
+      "bytes": 1764933,
+      "content_type": "application/pdf",
+      "sha256": "477ac6c367274adc856fa5f7dde47a0559fe1d75eb7c476b3ae39330f262a420",
+      "pages": 16
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3Q1.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q1.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q1.mp3",
+      "bytes": 10732040,
+      "content_type": "audio/mpeg",
+      "sha256": "fb9fdecc27fa11ecdb5171556930f519066d610bf18f0cdc37bf8ffeff065e04",
+      "duration_seconds": 670.7525
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3Q2.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q2.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q2.mp3",
+      "bytes": 13389164,
+      "content_type": "audio/mpeg",
+      "sha256": "cb8a9104e2bcf8ee42103812ce813721cdb6d0cde2606b230e1455c89b548bb0",
+      "duration_seconds": 836.82275
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3Q3.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q3.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q3.mp3",
+      "bytes": 7289705,
+      "content_type": "audio/mpeg",
+      "sha256": "a2e6d67aef9575d00795e4c3f49a963556f24459cea09914f690275515ba130d",
+      "duration_seconds": 455.606563
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3Q4.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q4.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q4.mp3",
+      "bytes": 3804002,
+      "content_type": "audio/mpeg",
+      "sha256": "b14a61ee14492176e5aaecf12bb9045dc486971597eba179df4ade0d7d70d6b0",
+      "duration_seconds": 237.750125
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3Q5.mp3",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q5.mp3",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/mp3/N3Q5.mp3",
+      "bytes": 6428183,
+      "content_type": "audio/mpeg",
+      "sha256": "c70829e87fdd1157a8cc809841c7b86a1bd0c6780be9b1985c8185975cf0e027",
+      "duration_seconds": 401.761438
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3R.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3R.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3R.pdf",
+      "bytes": 751148,
+      "content_type": "application/pdf",
+      "sha256": "1d56df57040ffe1da41c2cb6f152e3926d84fb5a17b7b25b348b01cfb9c89e69",
+      "pages": 12
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3V.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3V.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3V.pdf",
+      "bytes": 1099005,
+      "content_type": "application/pdf",
+      "sha256": "66abec06d2e23d2ee66b94cdf905b34cc87f97a5ce0ce5da47dc304053d647ea",
+      "pages": 7
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3answer.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3answer.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3answer.pdf",
+      "bytes": 83452,
+      "content_type": "application/pdf",
+      "sha256": "c4f1acc6b53add298bb28f8f4759e96242516b96546625c49c75d090d0913d2b",
+      "pages": 2
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3script.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3script.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3script.pdf",
+      "bytes": 432305,
+      "content_type": "application/pdf",
+      "sha256": "56a263ae5f1b758f306fabaf36bc0c3d6a3adde4bd17a5303ff43af3c4e8c803",
+      "pages": 13
+    },
+    {
+      "volume_publication_year": 2018,
+      "path": "2018/N3sheet.pdf",
+      "source_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3sheet.pdf",
+      "resolved_url": "https://www.jlpt.jp/samples/sample2018/pdf/N3sheet.pdf",
+      "bytes": 965624,
+      "content_type": "application/pdf",
+      "sha256": "fcb805e4fea1612d28469c28387450c39a6246cbce8c9cadd3735935f2774e0e",
+      "pages": 3
+    }
+  ],
+  "renderedPdfPages": {
+    "2012": {
+      "N3V": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "N3answer": [
+        1,
+        2
+      ],
+      "N3G": [
+        3,
+        4,
+        5,
+        6,
+        8,
+        9
+      ],
+      "N3R": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "N3L": [
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15
+      ],
+      "N3script": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "2018": {
+      "N3V": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "N3answer": [
+        1,
+        2
+      ],
+      "N3G": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "N3R": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12
+      ],
+      "N3L": [
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16
+      ],
+      "N3script": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ]
+    }
+  },
+  "imageWidth": 1600,
+  "imageFormat": "WebP quality 88"
+}

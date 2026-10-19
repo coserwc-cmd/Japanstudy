@@ -1,4 +1,4 @@
-name: Deploy Japanstudy to GitHub Pages
+name: Validate and build Japanstudy
 
 on:
   push:
@@ -7,30 +7,30 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
+  group: "japanstudy-build"
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
-          enablement: true
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+          node-version: "24"
+      - name: Validate scoring and question banks
+        run: |
+          node --check sw.js
+          node tests/core.test.mjs
+      - name: Build public site
+        run: python3 tools/build_site.py
+      - name: Upload public site package
+        uses: actions/upload-artifact@v4
         with:
-          path: .
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: japanstudy-site
+          path: _site
+          include-hidden-files: true

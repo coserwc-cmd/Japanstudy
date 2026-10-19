@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+_site/
+# Official recordings are linked from jlpt.jp online, or imported on-device.
+assets/official/**/*.mp3
