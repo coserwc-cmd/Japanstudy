@@ -26,6 +26,8 @@ jobs:
         run: |
           node --check sw.js
           node tests/core.test.mjs
+          node tests/sync-model.test.mjs
+          node tests/cloud-sync.test.mjs
       - name: Build public site
         run: python3 tools/build_site.py
       - name: Upload public site package

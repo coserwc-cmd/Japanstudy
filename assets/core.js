@@ -24,14 +24,20 @@ export function recordAttempt(state, q, answer, sessionId, time = Date.now()) {
   const id = `${sessionId}:${q.id}`;
   if (state.attempts.some(a => a.id === id)) return;
   const correct = isCorrect(q, answer);
-  state.attempts.push({id, questionId:q.id, subject:q.subject, level:q.level, correct, time, day:dayKey(time)});
+  state.attempts.push({id, questionId:q.id, subject:q.subject, level:q.level, correct, answer:String(answer ?? '').slice(0,600), time, day:dayKey(time)});
   let item = state.mistakes[q.id];
   if (!correct && !item) item = state.mistakes[q.id] = {question:q, wrongCount:0, correctStreak:0, starred:false, lastAt:time};
   if (item) {
-    item.lastAt = time; item.question = q;
+    item.lastAt = time; item.question = q; item.questionAt = time;
     if (correct) item.correctStreak++;
-    else { item.wrongCount++; item.correctStreak=0; item.lastWrongAt=time; item.lastAnswer=answer; }
+    else { item.wrongCount++; item.correctStreak=0; item.lastWrongAt=time; item.lastAnswer=String(answer ?? '').slice(0,600); }
   }
+}
+export function setStarred(state, question, starred, time = Date.now()) {
+  const item = state.mistakes[question.id] ||= {question,questionAt:time,wrongCount:0,correctStreak:0,starred:false,lastAt:time};
+  item.starred = Boolean(starred);
+  item.starredAt = Math.max(time, (item.starredAt || 0) + 1);
+  return item;
 }
 export function streak(attempts, now = Date.now()) {
   const days = new Set(attempts.map(a => a.day)); const date = new Date(now);

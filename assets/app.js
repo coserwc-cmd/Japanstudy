@@ -5,7 +5,9 @@ import {EXAM_LISTENING} from './exam-listening.js';
 import {OFFICIAL_BANKS} from './official-banks.js';
 import {createOfficialPlayer} from './official-player.js';
 import {initOfficialMedia, officialAudioStatus, importOfficialAudio} from './official-media.js';
-import {STORAGE_KEY, LEVELS, escapeHTML as e, normalize, isCorrect, shuffle, dayKey, uid, emptyState, scoreQuestions, recordAttempt, streak, validateBank, validateBackup} from './core.js';
+import {LEVELS, escapeHTML as e, normalize, isCorrect, shuffle, dayKey, uid, emptyState, scoreQuestions, recordAttempt, setStarred, streak, validateBank, validateBackup} from './core.js';
+import {createCloudSync} from './cloud-sync.js';
+import {mergeStates, toSyncDocument} from './sync-model.js';
 
 const $ = s => document.querySelector(s);
 const SUBJECTS = {vocab:'词汇', kanji:'汉字', grammar:'语法', verb:'动词变形', reading:'阅读', listening:'听力'};
@@ -30,7 +32,18 @@ const paths = {
 const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name] || paths.book}"/></svg>`;
 let storageOK = true;
 let state = emptyState();
-try { const raw=localStorage.getItem(STORAGE_KEY); if(raw) { const data=JSON.parse(raw); if(data.version!==1 || !Array.isArray(data.attempts) || !data.mistakes) throw Error('记录格式'); state={...state,...data,settings:{...state.settings,...data.settings}}; } } catch {storageOK=false;}
+const cloud=createCloudSync({
+ getState:()=>state,
+ storage:{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)},
+ applyState:(next,reason)=>{
+  if(reason==='account')stopAudio();
+  state=next;
+  if(reason==='account'){route='settings';location.hash='settings';render();}
+  else if(route!=='session' && !$('#modal')?.open && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))render();
+ },
+ onStatus:()=>{const panel=$('#cloud-panel');if(panel)panel.innerHTML=cloudPanelContent();},
+});
+try {state=cloud.loadState();} catch {storageOK=false;}
 let route = location.hash.slice(1) || 'home';
 let mistakeFilter='pending', mistakeSubject='all', mistakeSearch='';
 let toastTimer, speakingId=null, audioReady=false, pendingBank=null, pendingBackup=null;
@@ -42,7 +55,7 @@ const selected = (a,b) => a===b?' selected':'';
 const pct = (a,b) => b ? Math.round(a/b*100) : 0;
 const dateLabel = time => new Date(time).toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
 const pendingMistakes = () => Object.values(state.mistakes).filter(x => x.wrongCount>0 && x.correctStreak<2);
-function save() { if(!storageOK) return; try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); } catch { storageOK=false; toast('设备存储不可用或已满，请先导出学习记录。'); } }
+function save() { if(!storageOK) return; try {state=cloud.persist(state);cloud.schedule();} catch { storageOK=false; toast('设备存储不可用或记录无法保存，请先导出学习记录。'); } }
 function toast(message) { $('#toast').textContent=message; $('#toast').classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4000); }
 function haptic(wrong=false) { if(state.settings.haptics && typeof navigator.vibrate==='function') navigator.vibrate(wrong?[7,45,7]:7); }
 function stopAudio() { if('speechSynthesis' in window) speechSynthesis.cancel(); speakingId=null; officialPlayer.pause(); }
@@ -144,9 +157,9 @@ function empty(i,title,desc,label,action) {return `<div class="empty-state"><spa
 function recordsView() {
  const total=state.attempts.length; const correct=state.attempts.filter(a=>a.correct).length;
  const days=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return {day:dayKey(d),label:i===6?'今天':['日','一','二','三','四','五','六'][d.getDay()],n:state.attempts.filter(a=>a.day===dayKey(d)).length};}); const max=Math.max(1,...days.map(d=>d.n));
- return `${heading('SMALL STEPS, REAL PROGRESS','你的每一小步，都在这里。','学习记录保存在当前设备。可在设置中导出备份，转移到 iPhone 或 iPad。')}<div class="stats-grid"><div class="stat"><span class="stat-value">${total}</span><span class="stat-label">累计作答</span></div><div class="stat"><span class="stat-value">${total?pct(correct,total)+'<small>%</small>':'—'}</span><span class="stat-label">累计正确率</span></div><div class="stat"><span class="stat-value">${new Set(state.attempts.map(a=>a.day)).size}</span><span class="stat-label">学习天数</span></div><div class="stat"><span class="stat-value">${streak(state.attempts)}</span><span class="stat-label">连续天数</span></div></div><div class="home-grid section"><section class="panel"><h3>最近七天</h3><div class="week-chart">${days.map(d=>`<div class="day-column"><span>${d.n}</span><div class="day-bar-track"><div class="day-bar ${d.label==='今天'?'today':''}" style="height:${d.n?Math.max(5,d.n/max*100):2}%"></div></div><span class="day-label">${d.label}</span></div>`).join('')}</div></section><section class="panel"><h3>各科练习正确率</h3><div class="subject-stats">${Object.entries(SUBJECTS).map(([id,label])=>{const a=state.attempts.filter(a=>a.subject===id);return `<div class="subject-stat"><div class="row between"><span>${label}</span><small>${a.length?pct(a.filter(x=>x.correct).length,a.length)+'% · '+a.length+' 题':'还未练习'}</small></div><div class="progress-track"><div class="progress-fill" style="width:${pct(a.filter(x=>x.correct).length,a.length)}%"></div></div></div>`;}).join('')}</div></section></div><section class="section"><div class="section-head"><h2>最近的学习</h2><span class="subtle">练习分数 · 按题计分</span></div><div class="history-list">${state.history.length?[...state.history].reverse().map(h=>`<article class="history-item"><span class="history-icon">${icon(h.mode==='exam'?'exam':'book')}</span><div class="grow"><strong>${e(h.title)}</strong><small>${dateLabel(h.time)} · ${h.mode==='exam'?'模拟考试':'日常练习'}${h.partial?' · 未完成整卷':''}</small></div><div class="history-score"><strong>${h.correct} <span>/ ${h.total}</span></strong><small>${pct(h.correct,h.total)}% 正确</small></div>${h.id===state.lastResult?.id?btn('回顾','open-result','small ghost'):''}</article>`).join(''):empty('chart','还没有学习记录','从今天的第一道题开始吧。','开始练习','daily')}</div></section>`;
+ return `${heading('SMALL STEPS, REAL PROGRESS','你的每一小步，都在这里。','在学习设置中开启同步，iPhone 与 iPad 就能共享记录；离线时继续保存在本机。')}<div class="stats-grid"><div class="stat"><span class="stat-value">${total}</span><span class="stat-label">累计作答</span></div><div class="stat"><span class="stat-value">${total?pct(correct,total)+'<small>%</small>':'—'}</span><span class="stat-label">累计正确率</span></div><div class="stat"><span class="stat-value">${new Set(state.attempts.map(a=>a.day)).size}</span><span class="stat-label">学习天数</span></div><div class="stat"><span class="stat-value">${streak(state.attempts)}</span><span class="stat-label">连续天数</span></div></div><div class="home-grid section"><section class="panel"><h3>最近七天</h3><div class="week-chart">${days.map(d=>`<div class="day-column"><span>${d.n}</span><div class="day-bar-track"><div class="day-bar ${d.label==='今天'?'today':''}" style="height:${d.n?Math.max(5,d.n/max*100):2}%"></div></div><span class="day-label">${d.label}</span></div>`).join('')}</div></section><section class="panel"><h3>各科练习正确率</h3><div class="subject-stats">${Object.entries(SUBJECTS).map(([id,label])=>{const a=state.attempts.filter(a=>a.subject===id);return `<div class="subject-stat"><div class="row between"><span>${label}</span><small>${a.length?pct(a.filter(x=>x.correct).length,a.length)+'% · '+a.length+' 题':'还未练习'}</small></div><div class="progress-track"><div class="progress-fill" style="width:${pct(a.filter(x=>x.correct).length,a.length)}%"></div></div></div>`;}).join('')}</div></section></div><section class="section"><div class="section-head"><h2>最近的学习</h2><span class="subtle">练习分数 · 按题计分</span></div><div class="history-list">${state.history.length?[...state.history].reverse().map(h=>`<article class="history-item"><span class="history-icon">${icon(h.mode==='exam'?'exam':'book')}</span><div class="grow"><strong>${e(h.title)}</strong><small>${dateLabel(h.time)} · ${h.mode==='exam'?'模拟考试':'日常练习'}${h.partial?' · 未完成整卷':''}</small></div><div class="history-score"><strong>${h.correct} <span>/ ${h.total}</span></strong><small>${pct(h.correct,h.total)}% 正确</small></div>${h.id===state.lastResult?.id?btn('回顾','open-result','small ghost'):''}</article>`).join(''):empty('chart','还没有学习记录','从今天的第一道题开始吧。','开始练习','daily')}</div></section>`;
 }
-function settingsView() {return `${heading('MAKE YOURSELF AT HOME','按照你的节奏。','简简单单，保持学习。')}<div class="settings-grid"><section class="panel"><h3>学习偏好</h3><div class="setting-row"><div><strong>每日目标</strong><small>每天完成多少道题？</small></div><select id="goal-select" aria-label="每日目标">${[10,20,30].map(n=>`<option value="${n}"${selected(state.settings.goal,n)}>${n} 题</option>`).join('')}</select></div><div class="setting-row"><div><strong>触感反馈</strong><small>${typeof navigator.vibrate==='function'?'支持时提供轻盈的答题震动。':'此浏览器不提供震动接口，使用轻微按压动画反馈。'}</small></div><input type="checkbox" id="haptics" aria-label="触感反馈" ${state.settings.haptics?'checked':''} ${typeof navigator.vibrate!=='function'?'disabled':''}></div><div class="setting-row"><div><strong>日语语音</strong><small>原创听力使用设备日语语音；官方选编播放原版录音。</small></div>${btn(icon('volume')+' 试音','audio-test','small secondary')}</div></section><section class="panel"><h3>记录与备份</h3><p class="muted">进度仅保存在当前浏览器或主屏幕 App 内，不会自动跨设备同步。清理浏览器数据可能清除进度，建议定期导出。</p><div class="row wrap">${btn(icon('download')+' 导出学习记录','export-backup','secondary')}${btn(icon('upload')+' 恢复备份','import-backup','ghost')}</div><input type="file" id="backup-file" accept=".json,application/json" hidden><p class="source-note">恢复会替换本设备的记录；确认前可先导出备份。</p></section><section class="panel"><h3>放到 iPhone / iPad 主屏幕</h3><p class="source-note" id="offline-status">${e(offlineStatus)}</p><ol class="detail-list"><li>在 Safari 中打开已部署的网站。</li><li>点「分享」，选择「添加到主屏幕」。</li><li>首次联网打开后，核心页面与内置题库可离线练习。日语语音需要设备已安装对应声音。</li></ol><p class="source-note">离线能力需要 HTTPS 或本机开发环境。iPad 通常没有振动马达；iOS 网页无法直接调用 Taptic Engine。</p></section><section class="panel"><h3>关于题库</h3><p class="muted">内置 ${VOCAB.length} 个词汇、${KANJI.length} 个汉字词、${GRAMMAR.length} 道语法题、${VERBS.length} 个动词的 ${VERB_FORMS.length} 类活用，以及 1 套原创 N3 模拟卷、2 套官方真题选编（201 题）。内容用于基础训练，不代表 N5—N3 的完整知识范围。</p><p class="muted">官方未公布完整词汇或语法清单；本应用级别是教学参考。官方选编已在模考页提供，也可导入自己的 JSON 题库。</p><div class="source-links">${officialLinks()}</div></section></div>`;}
+function settingsView() {return `${heading('MAKE YOURSELF AT HOME','按照你的节奏。','简简单单，保持学习。')}<div class="settings-grid"><section class="panel sync-panel" id="cloud-panel">${cloudPanelContent()}</section><section class="panel"><h3>学习偏好</h3><div class="setting-row"><div><strong>每日目标</strong><small>每天完成多少道题？</small></div><select id="goal-select" aria-label="每日目标">${[10,20,30].map(n=>`<option value="${n}"${selected(state.settings.goal,n)}>${n} 题</option>`).join('')}</select></div><div class="setting-row"><div><strong>触感反馈</strong><small>${typeof navigator.vibrate==='function'?'支持时提供轻盈的答题震动。':'此浏览器不提供震动接口，使用轻微按压动画反馈。'}</small></div><input type="checkbox" id="haptics" aria-label="触感反馈" ${state.settings.haptics?'checked':''} ${typeof navigator.vibrate!=='function'?'disabled':''}></div><div class="setting-row"><div><strong>日语语音</strong><small>原创听力使用设备日语语音；官方选编播放原版录音。</small></div>${btn(icon('volume')+' 试音','audio-test','small secondary')}</div></section><section class="panel"><h3>记录与备份</h3><p class="muted">可开启上方的跨设备同步。未开启时，进度只保存在当前浏览器或主屏幕 App 内；仍建议定期导出备份。</p><div class="row wrap">${btn(icon('download')+' 导出学习记录','export-backup','secondary')}${btn(icon('upload')+' 恢复备份','import-backup','ghost')}</div><input type="file" id="backup-file" accept=".json,application/json" hidden><p class="source-note">开启同步时，恢复备份会合并已有记录；未开启时替换本机记录。确认前可先导出备份。</p></section><section class="panel"><h3>放到 iPhone / iPad 主屏幕</h3><p class="source-note" id="offline-status">${e(offlineStatus)}</p><ol class="detail-list"><li>在 Safari 中打开已部署的网站。</li><li>点「分享」，选择「添加到主屏幕」。</li><li>首次联网打开后，核心页面与内置题库可离线练习。日语语音需要设备已安装对应声音。</li></ol><p class="source-note">离线能力需要 HTTPS 或本机开发环境。iPad 通常没有振动马达；iOS 网页无法直接调用 Taptic Engine。</p></section><section class="panel"><h3>关于题库</h3><p class="muted">内置 ${VOCAB.length} 个词汇、${KANJI.length} 个汉字词、${GRAMMAR.length} 道语法题、${VERBS.length} 个动词的 ${VERB_FORMS.length} 类活用，以及 1 套原创 N3 模拟卷、2 套官方真题选编（201 题）。内容用于基础训练，不代表 N5—N3 的完整知识范围。</p><p class="muted">官方未公布完整词汇或语法清单；本应用级别是教学参考。官方选编已在模考页提供，也可导入自己的 JSON 题库。</p><div class="source-links">${officialLinks()}</div></section></div>`;}
 
 function kanaDistractor(reading, accepted=[]) {
  const changes=[['し','じ'],['じ','し'],['つ','っ'],['っ','つ'],['か','が'],['が','か'],['き','ぎ'],['ぎ','き'],['う','ゅう'],['ょ','よ'],['ゃ','や'],['え','い'],['お','う']];
@@ -173,6 +186,40 @@ function dailyQuestions(count) {
 }
 function modal(title,body,actions='') { $('#modal').innerHTML=`<div class="modal-head"><h2>${title}</h2><button class="icon-button modal-close" data-action="close-modal" aria-label="关闭">${icon('x')}</button></div><div class="modal-body">${body}</div>${actions?`<div class="modal-actions">${actions}</div>`:''}`; if(!$('#modal').open) $('#modal').showModal(); }
 function closeModal() { $('#modal').close(); }
+function cloudPanelContent() {
+ const s=cloud.getStatus(), busy=['connecting','syncing'].includes(s.phase);
+ const time=s.lastSyncedAt?new Date(s.lastSyncedAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}):'';
+ return `<div class="row between wrap"><h3>iPhone / iPad 同步</h3><span class="pill ${s.phase==='synced'?'green':'warm'}" data-cloud-status>${e(s.message)}</span></div>
+ <p class="muted">${s.connected?`学习空间 ${e(s.accountLabel)}${time?' · 上次同步 '+e(time):''}。使用相同同步码的设备共享记录。`:'在一台设备开启同步，再在另一台设备输入同步码，就能接着学。无需注册邮箱。'}</p>
+ <div class="row wrap">${s.connected?
+ `${btn(busy?'同步中…':'立即同步','cloud-sync','secondary',busy?'disabled':'')}${btn('连接另一台设备','cloud-show-code','ghost')}${btn('断开本设备','cloud-disconnect','ghost')}`:
+ `${btn('开启同步','cloud-create','primary',!storageOK||!s.configured||busy?'disabled':'')}${btn('输入已有同步码','cloud-join','secondary',!storageOK||!s.configured||busy?'disabled':'')}`}</div>
+ <p class="source-note">同步学习记录、错题及其解析、重点标记；离线练习在联网后合并。未完成的考试、学习偏好、完整导入题库和下载音频仍保存在各自设备。</p>`;
+}
+function showCloudCode() {
+ const code=cloud.getCode();if(!code)return;
+ modal('在另一台设备接着学',`<ol class="detail-list"><li>在另一台 iPhone 或 iPad 打开日和。</li><li>进入「学习设置」→「输入已有同步码」。</li><li>粘贴下面的同步码，连接同一学习空间。</li></ol><label for="cloud-code">你的同步码</label><textarea id="cloud-code" class="sync-code" readonly spellcheck="false" autocomplete="off">${e(code)}</textarea><p class="notice">同步码等同密码。请自己保存，分享网站时不要分享它；所有设备和同步码都丢失后无法找回云端记录。</p>`,btn('复制同步码','cloud-copy-code','primary')+btn('已保存','close-modal','secondary'));
+}
+function joinCloudDialog() {
+ modal('连接已有学习空间',`<form id="cloud-join-form"><label for="cloud-code-input">粘贴另一台设备显示的同步码</label><textarea id="cloud-code-input" class="sync-code" rows="3" maxlength="96" autocomplete="off" autocapitalize="none" spellcheck="false" required placeholder="输入 48 位同步码"></textarea>${state.attempts.length||Object.keys(state.mistakes).length?`<label class="sync-import-label"><input id="cloud-import-local" type="checkbox">同时合并这台设备的独立记录（${state.attempts.length} 次作答）</label>`:''}<p class="source-note">默认保留本机独立记录，不上传到已有学习空间。请只输入自己的同步码。</p><div class="row wrap"><button class="btn primary" type="submit" id="cloud-join-submit">连接并同步</button>${btn('取消','close-modal','ghost','type="button"')}</div><p id="cloud-form-error" class="source-note" role="status"></p></form>`);
+ $('#cloud-code-input').focus();
+}
+async function connectCloudFromForm(event) {
+ event.preventDefault();
+ const button=$('#cloud-join-submit');if(button.disabled)return;
+ button.disabled=true;button.textContent='正在连接…';
+ try {
+  await cloud.join($('#cloud-code-input').value,{importLocal:!!$('#cloud-import-local')?.checked});
+  closeModal();render();toast('已连接同一学习空间。');
+ } catch(error) {
+  const output=$('#cloud-form-error');if(output)output.textContent=error.message;
+ } finally {if(button.isConnected){button.disabled=false;button.textContent='连接并同步';}}
+}
+async function createCloudSpace(el) {
+ el.disabled=true;el.textContent='正在开启…';
+ try {await cloud.create();showCloudCode();render();}
+ catch(error){toast(error.message);if(el.isConnected){el.disabled=false;el.textContent='开启并合并本机记录';}}
+}
 function guardNewSession(callback) {
  if(!state.session) return callback();
  pendingStart=callback;
@@ -273,7 +320,8 @@ function finishSession(partial=false) {
   for(const q of questions) recordAttempt(state,q,s.answers[q.id]?.value||'',s.id);
   for(const [id,starred] of Object.entries(s.stars||{})) {
    const q=s.questions.find(q=>q.id===id); if(!q)continue;
-   const item=state.mistakes[id] ||= {question:q,wrongCount:0,correctStreak:0,lastAt:Date.now()}; item.starred=starred;
+   const time=s.starTimes?.[id] || Date.now();
+   if(time >= (state.mistakes[id]?.starredAt || 0))setStarred(state,q,starred,time);
   }
  }
  const result={id:s.id,mode:s.mode,title:s.title,questions,answers:s.answers,time:Date.now(),partial,audioTextMode:s.audioTextMode};
@@ -287,7 +335,7 @@ function updateTimer() {
  if(timer){timer.textContent=`${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(remaining%60).padStart(2,'0')}`;timer.classList.toggle('low',remaining<=300);}
  if(remaining===0)submitSection(true);
 }
-function toggleStar(q) {let item=state.mistakes[q.id];if(!item)item=state.mistakes[q.id]={question:q,wrongCount:0,correctStreak:0,starred:false,lastAt:Date.now()};item.starred=!item.starred;save();return item.starred;}
+function toggleStar(q) {const item=setStarred(state,q,!state.mistakes[q.id]?.starred);save();return item.starred;}
 function japaneseVoice() {return 'speechSynthesis' in window?speechSynthesis.getVoices().find(v=>/^ja([-_]|$)/i.test(v.lang)):null;}
 function speak(text,id,onEnd,onError) {
  const voice=japaneseVoice();
@@ -321,12 +369,20 @@ async function handleFile(input) {
    modal('题库检查通过',`<p><strong>${e(pendingBank.title)}</strong></p><p>来源：${e(pendingBank.source.name)}</p><p>三个部分，共 ${pendingBank.total} 题。将保存到本设备，听力文字使用系统日语语音朗读。</p>`,btn('取消','close-modal','ghost')+btn('保存题库','confirm-bank'));
   } else {
    pendingBackup=validateBackup(await readJSON(file,20*1024*1024));
-   modal('恢复学习记录？',`<p>备份内有 <strong>${pendingBackup.attempts.length} 次作答</strong>、${Object.keys(pendingBackup.mistakes).length} 道记录题目。</p><p class="notice">此操作会替换本设备的学习记录、题库和未完成练习。建议先导出当前记录。</p>`,btn('先导出当前记录','export-backup','secondary')+btn('确认替换并恢复','confirm-backup'));
+   modal('恢复学习记录？',`<p>备份内有 <strong>${pendingBackup.attempts.length} 次作答</strong>、${Object.keys(pendingBackup.mistakes).length} 道记录题目。</p><p class="notice">${cloud.getStatus().connected?'本次会合并学习记录、错题和标记；云端已有记录不会删除。题库和未完成练习将由备份替换。':'此操作会替换本设备的学习记录、题库和未完成练习。'}建议先导出当前记录。</p>`,btn('先导出当前记录','export-backup','secondary')+btn(cloud.getStatus().connected?'合并备份记录':'确认替换并恢复','confirm-backup'));
   }
  } catch(error) {toast('无法导入：'+error.message);} finally {input.value='';}
 }
 function inspectMistake(id) {const item=state.mistakes[id];if(!item)return;const q=item.question;modal('这道题，再看一遍',`<span class="pill green">${e(q.level)} · ${SUBJECTS[q.subject]}</span>${q.passage?`<p class="passage jp">${e(q.passage)}</p>`:''}${q.context?`<p class="context jp">${e(q.context)}</p>`:''}<h3 class="jp">${e(q.prompt)}</h3>${paperPages(q.pageImages,q.sourceLabel)}${item.lastAnswer?`<p>上次错误答案：${e(item.lastAnswer)}</p>`:''}${explanation(q,item.lastAnswer)}`,btn('关闭','close-modal','ghost')+btn('单独练习这题','review-one','primary',`data-id="${e(id)}"`));}
 const actions={
+ 'cloud-create':()=>modal('开启跨设备同步',`<p>会为你创建独立的学习空间，并上传这台设备已有的 <strong>${state.attempts.length} 次作答</strong>、错题和重点标记。</p><p>开启后保存同步码，再到另一台设备输入。同一同步码共用一份记录；其他人使用自己的同步码。</p><p class="source-note">学习记录保存在 Supabase 云服务。试题音频、设备文件和同步码不写入云端学习记录表。</p>`,btn('取消','close-modal','ghost')+btn('开启并合并本机记录','cloud-confirm-create')),
+ 'cloud-confirm-create':createCloudSpace,
+ 'cloud-join':joinCloudDialog,
+ 'cloud-show-code':showCloudCode,
+ 'cloud-copy-code':async()=>{try{await navigator.clipboard.writeText(cloud.getCode());toast('同步码已复制，请只粘贴到自己的设备。');}catch{$('#cloud-code')?.select();toast('请长按同步码并复制。');}},
+ 'cloud-sync':()=>cloud.syncNow(),
+ 'cloud-disconnect':()=>modal('断开这台设备的同步？','<p>云端记录和其他设备不受影响。本设备会回到原来的独立记录。</p><p>尚未上传的记录仍留在本浏览器，重新连接同一同步码后继续同步。请先保存同步码。</p>',btn('先查看同步码','cloud-show-code','secondary')+btn('断开本设备','cloud-confirm-disconnect','ghost')),
+ 'cloud-confirm-disconnect':()=>{try{cloud.disconnect();closeModal();render();}catch(error){toast(error.message);}},
  'settings':()=>navTo('settings'),'open-home':()=>navTo('home'),'open-practice':()=>navTo('practice'),'open-exam':()=>navTo('exam'),'open-result':()=>navTo('result'),
  'close-modal':closeModal,
  'level':el=>{state.settings.level=el.dataset.level;save();render();},
@@ -342,7 +398,7 @@ const actions={
  'next-question':nextQuestion,
  'previous-question':()=>{const s=state.session,lower=s.mode==='exam'?s.questions.findIndex(q=>q.id===currentSection().ids[0]):0;if(s.index>lower){s.index--;stopQuestionAudio();save();render();}},
  'jump-question':el=>{const s=state.session;if(s.mode!=='exam'||!currentSection().ids.includes(el.dataset.id))return;s.index=s.questions.findIndex(q=>q.id===el.dataset.id);stopQuestionAudio();save();render();window.scrollTo({top:0,behavior:'instant'});},
- 'star-current':()=>{const s=state.session,q=currentQ();if(s.mode==='exam'){s.stars ||= {};s.stars[q.id]=!(s.stars[q.id]??!!state.mistakes[q.id]?.starred);save();}else toggleStar(q);render();},
+ 'star-current':()=>{const s=state.session,q=currentQ();if(s.mode==='exam'){s.stars ||= {};s.starTimes ||= {};s.stars[q.id]=!(s.stars[q.id]??!!state.mistakes[q.id]?.starred);s.starTimes[q.id]=Math.max(Date.now(),(s.starTimes[q.id]||state.mistakes[q.id]?.starredAt||0)+1);save();}else toggleStar(q);render();},
  'star-item':el=>{toggleStar(state.mistakes[el.dataset.id].question);render();},
  'star-result':el=>{const q=state.lastResult.questions.find(q=>q.id===el.dataset.id);const starred=toggleStar(q);el.innerHTML=icon('star')+(starred?' 取消重点':' 标为重点');toast(starred?'已标为重点':'已取消重点标记');},
  'flag-question':()=>{const s=state.session,id=currentQ().id;s.flags=s.flags.includes(id)?s.flags.filter(x=>x!==id):[...s.flags,id];save();render();},
@@ -360,10 +416,10 @@ const actions={
  'import-bank':()=>$('#bank-file').click(),
  'confirm-bank':()=>{if(!pendingBank)return;const id='bank-'+uid();const sections=pendingBank.sections.map((s,si)=>({...s,questions:s.questions.map((q,qi)=>({...q,id:id+'-'+si+'-'+qi}))}));state.banks.push({...pendingBank,id,sections});pendingBank=null;save();closeModal();render();toast('题库已保存到这台设备。');},
  'export-backup':exportBackup,'import-backup':()=>$('#backup-file').click(),
- 'confirm-backup':()=>{if(!pendingBackup)return;stopAudio();state=pendingBackup;pendingBackup=null;storageOK=true;save();closeModal();navTo('records');toast('学习记录已恢复。');},
+ 'confirm-backup':()=>{if(!pendingBackup)return;try{const restored=cloud.getStatus().connected?mergeStates(pendingBackup,toSyncDocument(state)):pendingBackup;stopAudio();state=restored;pendingBackup=null;storageOK=true;save();closeModal();navTo('records');toast(storageOK?'学习记录已恢复。':'记录已载入，但未能写入本机存储，请立即导出备份。');}catch(error){toast('无法恢复：'+error.message);}},
 };
 document.addEventListener('click',event=>{const el=event.target.closest('[data-action]');if(!el||el.disabled)return;const action=actions[el.dataset.action];if(action){event.preventDefault();action(el);}});
-document.addEventListener('submit',event=>{if(event.target.id==='answer-form'){event.preventDefault();if(!event.isComposing)submitAnswer($('#answer-input').value);}});
+document.addEventListener('submit',event=>{if(event.target.id==='cloud-join-form'){connectCloudFromForm(event);return;}if(event.target.id==='answer-form'){event.preventDefault();if(!event.isComposing)submitAnswer($('#answer-input').value);}});
 document.addEventListener('keydown',event=>{if(event.target.id==='answer-input'&&event.key==='Enter'&&(event.isComposing||event.keyCode===229))event.preventDefault();});
 document.addEventListener('input',event=>{const el=event.target;if(el.id==='answer-input'&&state.session){state.session.drafts[currentQ().id]=el.value;save();}if(el.id==='mistake-search'){mistakeSearch=el.value;const start=el.selectionStart;render();const next=$('#mistake-search');next.focus();try{next.setSelectionRange(start,start);}catch{}}});
 document.addEventListener('change',event=>{const el=event.target;if(el.matches('.official-audio-progress')&&currentQ()?.audioSrc)officialPlayer.seek(currentQ(),el.value);if(el.id==='goal-select'){state.settings.goal=Number(el.value);save();toast('每日目标已更新。');}if(el.id==='haptics'){state.settings.haptics=el.checked;save();haptic();}if(el.id==='mistake-subject'){mistakeSubject=el.value;render();}if(el.matches('.official-audio-file'))handleOfficialAudioFile(el);if(['bank-file','backup-file'].includes(el.id))handleFile(el);});
@@ -375,6 +431,7 @@ setInterval(updateTimer,1000);
 // Trigger discovery early; Safari may populate voices asynchronously.
 if('speechSynthesis' in window)speechSynthesis.getVoices();
 render();
+if(storageOK)cloud.init();
 initOfficialMedia().then(()=>{if(route==='exam')render();});
 if('serviceWorker' in navigator) {
  const prepareOffline=async()=>{

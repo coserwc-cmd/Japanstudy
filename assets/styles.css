@@ -810,3 +810,11 @@ dialog::backdrop { background: rgb(36 47 30 / 35%); -webkit-backdrop-filter: blu
   .question-card, .review-item, .wrong-card, .feedback { break-inside: avoid; box-shadow: none; }
   body { background: white; }
 }
+
+/* Cross-device progress */
+.sync-panel { grid-column:1 / -1; }
+.sync-panel h3 { margin-bottom:0; }
+.sync-panel .pill { white-space:normal; }
+.sync-code { display:block; width:100%; min-height:90px; margin:12px 0 16px; padding:14px; resize:vertical; border:1px solid var(--line,#dce2d9); border-radius:12px; background:var(--paper,#fafbf7); color:inherit; font:16px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+.sync-import-label { display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.7; }
+.sync-import-label input { margin-top:6px; flex-shrink:0; }
