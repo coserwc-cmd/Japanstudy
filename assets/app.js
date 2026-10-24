@@ -8,6 +8,8 @@ import {initOfficialMedia, officialAudioStatus, importOfficialAudio} from './off
 import {LEVELS, escapeHTML as e, normalize, isCorrect, shuffle, dayKey, uid, emptyState, scoreQuestions, recordAttempt, setStarred, streak, validateBank, validateBackup} from './core.js';
 import {createCloudSync} from './cloud-sync.js';
 import {mergeStates, toSyncDocument} from './sync-model.js';
+import {selectWordEntries, getWordCoverage, selectPracticeQuestions, getQuestionCoverage} from './practice-selection.js';
+import {wordQuestion, hasKanji} from './word-questions.js';
 
 const $ = s => document.querySelector(s);
 const SUBJECTS = {vocab:'词汇', kanji:'汉字', grammar:'语法', verb:'动词变形', reading:'阅读', listening:'听力'};
@@ -64,6 +66,10 @@ function navTo(next) { stopAudio(); if(location.hash.slice(1)===next) {route=nex
 function btn(label, action, cls='primary', attrs='') { return `<button class="btn ${cls}" data-action="${action}" ${attrs}>${label}</button>`; }
 function levelTabs() {return `<div class="level-tabs" aria-label="学习级别">${['全部',...LEVELS].map(l=>`<button class="chip ${state.settings.level===l?'active':''}" data-action="level" data-level="${l}" aria-pressed="${state.settings.level===l}">${l==='全部'?'N5—N3':l}</button>`).join('')}</div>`;}
 const levelMatch = q => state.settings.level==='全部'||q.level===state.settings.level;
+const wordPool = (subject='mixed') => [...(subject!=='kanji'?VOCAB.filter(levelMatch).map(entry=>({entry,subject:'vocab'})):[]),...(subject!=='vocab'?KANJI.filter(levelMatch).map(entry=>({entry,subject:'kanji'})):[])];
+const recentQuestions = () => [...(state.session?.questions||[]),...(state.lastResult?.questions||[])];
+const selectWords = (pool,count) => selectWordEntries(pool,count,{attempts:state.attempts,recentQuestions:recentQuestions()});
+const selectGrammar = count => selectPracticeQuestions(GRAMMAR.filter(levelMatch),count,{attempts:state.attempts,recentQuestions:recentQuestions()});
 function heading(kicker,title,sub='') {return `<header class="page-head"><div class="eyebrow">${kicker}</div><h1>${title}</h1>${sub?`<p class="muted">${sub}</p>`:''}</header>`;}
 function navMarkup(mobile=false) {return NAV.map(([id,i,label])=>`<a href="#${id}" class="nav-link ${route===id?'active':''}" ${route===id?'aria-current="page"':''}>${icon(i)}<span>${mobile?({practice:'练习',exam:'模考',mistakes:'错题',records:'记录'}[id]||label):label}</span>${id==='mistakes' && pendingMistakes().length && !mobile?`<span class="nav-count">${pendingMistakes().length}</span>`:''}</a>`).join('');}
 function render() {
@@ -85,7 +91,9 @@ function homeView() {
   <div class="home-grid"><section class="daily-card panel"><div class="row between"><h3>今日的小目标</h3><span class="pill green">${today.length} / ${state.settings.goal} 题</span></div><p class="muted">${progress===100?'今日目标已达成。让学过的知识沉淀一下。':'不必一次学很多，持续就会有变化。'}</p><div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div><a href="#records" class="text-button">看看学习足迹 ${icon('arrow')}</a></section><section class="quote-card"><span class="eyebrow">今日のひとこと</span><p class="jp">継続は力なり。</p><span>坚持，就是力量。</span><small>积累的每一天，都算数。</small></section></div><p class="footer-note">为专注学习留一点空白。<span>日和 · 日本語</span></p>`;
 }
 function practiceView() {
- return `${heading('PRACTICE AT YOUR PACE','每一次练习，都是积累。','选择一个方向。答题后即时讲解，错题自动留存。')}${resumeBanner()}<div class="filter-bar"><span class="subtle">当前学习级别</span>${levelTabs()}</div><div class="practice-grid">${moduleCard('あ','词汇与汉字','选择题里适度加入近音、近义干扰项，也留一些输入题给主动回忆。',`${VOCAB.filter(levelMatch).length+KANJI.filter(levelMatch).length} 条学习内容`,'setup-words','words')}${moduleCard('文','语法练习','JLPT 风格单空选择。正确用法、错误原因和例句一起学。',`${GRAMMAR.filter(levelMatch).length} 道原创练习`,'setup-grammar','grammar')}${moduleCard('変','动词变形','可能、否定、て形、被动、使役等十二种活用。',`${VERBS.length} 个常用动词`,'setup-verbs','verb')}${moduleCard('聞','听力小练习','用系统日语语音练习理解。答题后可查看原文。',`${EXAM_LISTENING.length} 道原创听力`,'setup-listening','exam')}</div><section class="panel section"><div class="section-head"><h3>之前的课堂练习</h3><span class="pill muted">保留原有进度</span></div><div class="legacy-links"><a href="quizzes/lesson18.html">第18课词汇 ${icon('arrow')}</a><a href="quizzes/full-practice.html">三页词汇与敬语 ${icon('arrow')}</a><a href="quizzes/keigo-choice.html">敬语互选 ${icon('arrow')}</a><a href="quizzes/vocab-39.html">39词复习 ${icon('arrow')}</a></div></section><p class="source-note">本页日常内容为原创学习题库，级别划分为教学参考，并非完整的 JLPT 官方词表。词汇、汉字以常用词和例句学习。</p>`;
+ const coverage=getWordCoverage(wordPool(),state.attempts);
+ const grammarCoverage=getQuestionCoverage(GRAMMAR.filter(levelMatch),state.attempts);
+ return `${heading('PRACTICE AT YOUR PACE','每一次练习，都是积累。','选择一个方向。答题后即时讲解，错题自动留存。')}${resumeBanner()}<div class="filter-bar"><span class="subtle">当前学习级别</span>${levelTabs()}</div><div class="practice-grid">${moduleCard('あ','词汇与汉字','优先学习未练词，再复习较久没见的词。选择与输入结合，错题单独巩固。',`已练 ${coverage.seen} / ${coverage.total} 词条`,'setup-words','words')}${moduleCard('文','语法练习','优先未练题，逐步覆盖不同用法。每个错误选项都有说明，并附正确用法与例句。',`已练 ${grammarCoverage.seen} / ${grammarCoverage.total} 题`,'setup-grammar','grammar')}${moduleCard('変','动词变形','可能、否定、て形、被动、使役等十二种活用。',`${VERBS.length} 个常用动词`,'setup-verbs','verb')}${moduleCard('聞','听力小练习','用系统日语语音练习理解。答题后可查看原文。',`${EXAM_LISTENING.length} 道原创听力`,'setup-listening','exam')}</div><section class="panel section"><div class="section-head"><h3>之前的课堂练习</h3><span class="pill muted">保留原有进度</span></div><div class="legacy-links"><a href="quizzes/lesson18.html">第18课词汇 ${icon('arrow')}</a><a href="quizzes/full-practice.html">三页词汇与敬语 ${icon('arrow')}</a><a href="quizzes/keigo-choice.html">敬语互选 ${icon('arrow')}</a><a href="quizzes/vocab-39.html">39词复习 ${icon('arrow')}</a></div></section><p class="source-note">当前级别含 ${VOCAB.filter(levelMatch).length} 个词汇、${KANJI.filter(levelMatch).length} 个汉字词。已练按词条统计，不等于已掌握；切换读音、词义或输入不会重复算作新词。题库仍在扩充，不代表完整备考范围；JLPT 未公布固定的官方词表。</p>`;
 }
 function officialLinks() {return `<a href="https://www.jlpt.jp/e/samples/forlearners.html" target="_blank" rel="noopener noreferrer">官方公开样题 ↗</a><a href="https://www.jlpt.jp/e/guideline/testsections.html" target="_blank" rel="noopener noreferrer">考试科目与时间 ↗</a><a href="https://www.jlpt.jp/e/guideline/results.html" target="_blank" rel="noopener noreferrer">官方成绩说明 ↗</a>`;}
 function paperPages(paths,label='官方原卷') {
@@ -161,27 +169,15 @@ function recordsView() {
 }
 function settingsView() {return `${heading('MAKE YOURSELF AT HOME','按照你的节奏。','简简单单，保持学习。')}<div class="settings-grid"><section class="panel sync-panel" id="cloud-panel">${cloudPanelContent()}</section><section class="panel"><h3>学习偏好</h3><div class="setting-row"><div><strong>每日目标</strong><small>每天完成多少道题？</small></div><select id="goal-select" aria-label="每日目标">${[10,20,30].map(n=>`<option value="${n}"${selected(state.settings.goal,n)}>${n} 题</option>`).join('')}</select></div><div class="setting-row"><div><strong>触感反馈</strong><small>${typeof navigator.vibrate==='function'?'支持时提供轻盈的答题震动。':'此浏览器不提供震动接口，使用轻微按压动画反馈。'}</small></div><input type="checkbox" id="haptics" aria-label="触感反馈" ${state.settings.haptics?'checked':''} ${typeof navigator.vibrate!=='function'?'disabled':''}></div><div class="setting-row"><div><strong>日语语音</strong><small>原创听力使用设备日语语音；官方选编播放原版录音。</small></div>${btn(icon('volume')+' 试音','audio-test','small secondary')}</div></section><section class="panel"><h3>记录与备份</h3><p class="muted">可开启上方的跨设备同步。未开启时，进度只保存在当前浏览器或主屏幕 App 内；仍建议定期导出备份。</p><div class="row wrap">${btn(icon('download')+' 导出学习记录','export-backup','secondary')}${btn(icon('upload')+' 恢复备份','import-backup','ghost')}</div><input type="file" id="backup-file" accept=".json,application/json" hidden><p class="source-note">开启同步时，恢复备份会合并已有记录；未开启时替换本机记录。确认前可先导出备份。</p></section><section class="panel"><h3>放到 iPhone / iPad 主屏幕</h3><p class="source-note" id="offline-status">${e(offlineStatus)}</p><ol class="detail-list"><li>在 Safari 中打开已部署的网站。</li><li>点「分享」，选择「添加到主屏幕」。</li><li>首次联网打开后，核心页面与内置题库可离线练习。日语语音需要设备已安装对应声音。</li></ol><p class="source-note">离线能力需要 HTTPS 或本机开发环境。iPad 通常没有振动马达；iOS 网页无法直接调用 Taptic Engine。</p></section><section class="panel"><h3>关于题库</h3><p class="muted">内置 ${VOCAB.length} 个词汇、${KANJI.length} 个汉字词、${GRAMMAR.length} 道语法题、${VERBS.length} 个动词的 ${VERB_FORMS.length} 类活用，以及 1 套原创 N3 模拟卷、2 套官方真题选编（201 题）。内容用于基础训练，不代表 N5—N3 的完整知识范围。</p><p class="muted">官方未公布完整词汇或语法清单；本应用级别是教学参考。官方选编已在模考页提供，也可导入自己的 JSON 题库。</p><div class="source-links">${officialLinks()}</div></section></div>`;}
 
-function kanaDistractor(reading, accepted=[]) {
- const changes=[['し','じ'],['じ','し'],['つ','っ'],['っ','つ'],['か','が'],['が','か'],['き','ぎ'],['ぎ','き'],['う','ゅう'],['ょ','よ'],['ゃ','や'],['え','い'],['お','う']];
- for(const [a,b] of changes) if(reading.includes(a)) {const candidate=reading.replace(a,b);if(![reading,...accepted].some(x=>normalize(x)===normalize(candidate))) return candidate;}
- return reading.length>1?reading+'う':'あ'+reading;
-}
-function wordQuestion(entry, subject, type) {
- const pool=(subject==='kanji'?KANJI:VOCAB).filter(q=>q.id!==entry.id && q.level===entry.level);
- const explanation=`「${entry.word}」读作「${entry.reading}」，意思是“${entry.meaning}”。${entry.acceptedReadings?.length>1?'本词也接受：'+entry.acceptedReadings.join('、')+'。':''}`;
- const base={id:entry.id+'-'+type,subject,level:entry.level,topic:subject==='kanji'?'汉字词读音':'词汇积累',context:entry.example,explanation,example:entry.example,translation:entry.translation,point:`${entry.word}【${entry.reading}】 · ${entry.meaning}`};
- if(type==='input') return {...base,kind:'input',prompt:`请用假名写出「${entry.word}」的读音。`,answer:entry.reading,accepted:entry.acceptedReadings||[entry.reading]};
- const meaning=type==='meaning', answer=meaning?entry.meaning:entry.reading;
- const similar=meaning?entry.meaningDistractor:kanaDistractor(entry.reading,entry.acceptedReadings);
- const candidates=[similar,...shuffle(pool.map(x=>meaning?x.meaning:x.reading))].filter(Boolean).filter(x=>x!==answer&&!(entry.acceptedReadings||[]).includes(x));
- const wrongs=[...new Set(candidates)].slice(0,3);
- return {...base,kind:'choice',prompt:meaning?`「${entry.word}」在句中是什么意思？`:`「${entry.word}」的正确读音是？`,answer,options:shuffle([answer,...wrongs])};
-}
 function dailyQuestions(count) {
- const questions=[...shuffle(VOCAB.filter(levelMatch)).slice(0,count).map((x,i)=>wordQuestion(x,'vocab',i%4===0?'input':'meaning')),...shuffle(KANJI.filter(levelMatch)).slice(0,count).map((x,i)=>wordQuestion(x,'kanji',i%3===0?'input':'reading')),...shuffle(GRAMMAR.filter(levelMatch)),...shuffle(VERBS).slice(0,count).map((x,i)=>makeVerbQuestion(x,VERB_FORMS.filter(levelMatch)[i%VERB_FORMS.filter(levelMatch).length]?.id||'nai')).filter(Boolean)];
- // Rotate the subjects so every daily set contains vocabulary, kanji, grammar and a conjugation.
- const grouped=['vocab','kanji','grammar','verb'].map(s=>shuffle(questions.filter(q=>q.subject===s))); const chosen=[];
- for(let i=0;chosen.length<count&&grouped.some(a=>a.length);i++) {const q=grouped[i%4].pop();if(q)chosen.push(q);}
+ const words=selectWords(wordPool('vocab'),count).map(({entry},i)=>wordQuestion(entry,'vocab',i%4===0?'input':'meaning'));
+ const kanji=selectWords(wordPool('kanji'),count).map(({entry},i)=>wordQuestion(entry,'kanji',i%3===0?'input':'reading'));
+ const grammar=selectGrammar(count);
+ const forms=VERB_FORMS.filter(levelMatch);
+ const verbs=shuffle(VERBS).slice(0,count).map((x,i)=>makeVerbQuestion(x,forms[i%forms.length]?.id||'nai')).filter(Boolean);
+ // Preserve the selector's freshness order instead of shuffling it again.
+ const grouped=[words,kanji,grammar,verbs],chosen=[];
+ for(let i=0;chosen.length<count&&grouped.some(a=>a.length);i++) {const q=grouped[i%4].shift();if(q)chosen.push(q);}
  return chosen;
 }
 function modal(title,body,actions='') { $('#modal').innerHTML=`<div class="modal-head"><h2>${title}</h2><button class="icon-button modal-close" data-action="close-modal" aria-label="关闭">${icon('x')}</button></div><div class="modal-body">${body}</div>${actions?`<div class="modal-actions">${actions}</div>`:''}`; if(!$('#modal').open) $('#modal').showModal(); }
@@ -229,16 +225,16 @@ let pendingStart=null;
 function setup(kind) {
  const isWords=kind==='words', isVerb=kind==='verbs', isListening=kind==='listening';
  const formOptions=VERB_FORMS.filter(levelMatch);
- modal({words:'词汇与汉字',grammar:'语法练习',verbs:'动词变形专项',listening:'听力小练习'}[kind],`<p class="muted">${state.settings.level==='全部'?'N5—N3 综合':e(state.settings.level)} · ${isListening?'系统日语语音，答题后查看原文与解释。':'循序渐进，不必急着答完。'}</p><div class="form-grid"><div class="field"><label for="practice-count">本轮题量</label><select id="practice-count"><option value="10">10 题 · 轻量练习</option><option value="20">20 题 · 集中巩固</option><option value="5">5 题 · 碎片时间</option></select></div>${isWords?'<div class="field"><label for="word-subject">学习内容</label><select id="word-subject"><option value="mixed">词汇 + 汉字</option><option value="vocab">词汇</option><option value="kanji">汉字读音</option></select></div><div class="field"><label for="practice-style">答题方式</label><select id="practice-style"><option value="mixed">混合 · 约三成输入题</option><option value="choice">选择题</option><option value="input">输入读音</option></select></div>':''}${isVerb?`<div class="field"><label for="verb-form">重点形态</label><select id="verb-form"><option value="all">混合练习</option>${formOptions.map(f=>`<option value="${e(f.id)}">${e(f.label)} · ${e(f.level)}</option>`).join('')}</select></div><p class="source-note">请使用普通形作答，汉字或假名均可。可能形练习采用标准「られる」，不收录「ら抜き」。</p>`:''}</div>${isListening?'<p class="notice">听力需要设备的日语语音。若无语音可切换为「阅读听力稿」；这会单独标注为文本理解练习。</p>':''}`,`${isListening?btn(icon('volume')+' 先试音','audio-test','secondary'):''}${btn('开始练习 '+icon('arrow'),'begin-practice','primary',`data-kind="${kind}"`)}`);
+ modal({words:'词汇与汉字',grammar:'语法练习',verbs:'动词变形专项',listening:'听力小练习'}[kind],`<p class="muted">${state.settings.level==='全部'?'N5—N3 综合':e(state.settings.level)} · ${isListening?'系统日语语音，答题后查看原文与解释。':'循序渐进，不必急着答完。'}</p><div class="form-grid"><div class="field"><label for="practice-count">本轮题量</label><select id="practice-count"><option value="10">10 题 · 轻量练习</option><option value="20">20 题 · 集中巩固</option><option value="5">5 题 · 碎片时间</option></select></div>${isWords?'<div class="field"><label for="word-subject">学习内容</label><select id="word-subject"><option value="mixed">词汇 + 汉字</option><option value="vocab">词汇</option><option value="kanji">汉字读音</option></select></div><div class="field"><label for="practice-style">答题方式</label><select id="practice-style"><option value="mixed">混合 · 约三成输入题</option><option value="choice">选择题</option><option value="input">输入读音</option></select></div><p class="source-note">优先未练词，切换题型仍按同一词计。输入读音只选含汉字的词；纯假名词通过词义选择题学习。需要反复巩固时可进入错题复习。</p>':''}${isVerb?`<div class="field"><label for="verb-form">重点形态</label><select id="verb-form"><option value="all">混合练习</option>${formOptions.map(f=>`<option value="${e(f.id)}">${e(f.label)} · ${e(f.level)}</option>`).join('')}</select></div><p class="source-note">请使用普通形作答，汉字或假名均可。可能形练习采用标准「られる」，不收录「ら抜き」。</p>`:''}</div>${isListening?'<p class="notice">听力需要设备的日语语音。若无语音可切换为「阅读听力稿」；这会单独标注为文本理解练习。</p>':''}`,`${isListening?btn(icon('volume')+' 先试音','audio-test','secondary'):''}${btn('开始练习 '+icon('arrow'),'begin-practice','primary',`data-kind="${kind}"`)}`);
 }
 function beginPractice(kind) {
  const count=Number($('#practice-count')?.value||10);let questions=[],title='';let audioTextMode=false;
  if(kind==='words') {
    const subject=$('#word-subject').value,style=$('#practice-style').value;
-   let pool=shuffle([...(subject!=='kanji'?VOCAB.filter(levelMatch).map(x=>({entry:x,subject:'vocab'})):[]),...(subject!=='vocab'?KANJI.filter(levelMatch).map(x=>({entry:x,subject:'kanji'})):[])]).slice(0,count);
+   const pool=selectWords(wordPool(subject).filter(({entry})=>style!=='input'||hasKanji(entry)),count);
    questions=pool.map(({entry,subject},i)=>wordQuestion(entry,subject,style==='input'||(style==='mixed'&&i%3===0)?'input':subject==='kanji'?'reading':i%2?'meaning':'reading'));
    title=subject==='mixed'?'词汇与汉字':subject==='vocab'?'词汇练习':'汉字读音';
- } else if(kind==='grammar') {questions=shuffle(GRAMMAR.filter(levelMatch)).slice(0,count);title='语法练习';}
+ } else if(kind==='grammar') {questions=selectGrammar(count);title='语法练习';}
  else if(kind==='verbs') {const form=$('#verb-form').value;const forms=VERB_FORMS.filter(levelMatch).filter(f=>form==='all'||f.id===form);questions=shuffle(VERBS.flatMap(v=>forms.map(f=>makeVerbQuestion(v,f.id))).filter(Boolean)).slice(0,count);title=form==='all'?'动词变形':`动词 · ${VERB_FORMS.find(f=>f.id===form).label}`;}
  else {questions=shuffle(EXAM_LISTENING).slice(0,count);audioTextMode=!japaneseVoice();title=audioTextMode?'听力稿 · 文本理解':'听力小练习';}
  closeModal(); guardNewSession(()=>startPractice(questions,title,'practice',audioTextMode));
