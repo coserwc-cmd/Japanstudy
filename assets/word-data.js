@@ -1,3 +1,7 @@
+import {N3_VOCAB_NOUNS} from './n3-vocab-nouns.js';
+import {N3_VOCAB_USAGE} from './n3-vocab-usage.js';
+import {N3_KANJI} from './n3-kanji.js';
+
 // Original learning material. Levels are teaching approximations, not an official JLPT list.
 // Row format: word, reading, Chinese meaning, Japanese example, Chinese translation.
 const vocabulary = {
@@ -168,6 +172,12 @@ const kanjiReadings = {
   ],
 };
 
+// Keep published rows in order: their positions are stable IDs used by saved records.
+// Future rows go after all released blocks, not inside/at the end of a module
+// that precedes another block. Never shift existing IDs or replace headwords.
+vocabulary.N3.push(...N3_VOCAB_NOUNS, ...N3_VOCAB_USAGE);
+kanjiReadings.N3.push(...N3_KANJI);
+
 function expandRows(groups, prefix) {
   return Object.entries(groups).flatMap(([level, rows]) => rows.map(([word, reading, meaning, example, translation], i) => ({
     id: `${prefix}-${level.toLowerCase()}-${String(i + 1).padStart(2, '0')}`,
@@ -201,7 +211,8 @@ const vocabularyExtras = {
 
 export const VOCAB = expandRows(vocabulary, 'v').map(entry => ({ ...entry, ...vocabularyExtras[entry.word] }));
 // Read whole words in context: a kanji can have several correct readings in isolation.
-export const KANJI = expandRows(kanjiReadings, 'k');
+export const KANJI = expandRows(kanjiReadings, 'k').map(entry => entry.word==='乗客'
+  ? {...entry,acceptedReadings:['じょうきゃく','じょうかく']} : entry);
 
 export const VERBS = [
   ['kaku', '書く', 'かく', '写', '五段'],

@@ -1,9 +1,12 @@
-const CACHE = 'hiyori-static-v4';
+const CACHE = 'hiyori-static-v5';
 const OFFICIAL_CACHE = 'hiyori-official-v1';
 const FILES = [
   './', './index.html', './manifest.webmanifest',
   './assets/app.js', './assets/core.js', './assets/styles.css',
   './assets/word-data.js', './assets/grammar-data.js',
+  './assets/n3-vocab-nouns.js', './assets/n3-vocab-usage.js', './assets/n3-kanji.js',
+  './assets/grammar-n3-extra.js', './assets/grammar-basic-extra.js',
+  './assets/practice-selection.js', './assets/word-questions.js',
   './assets/exam-written.js', './assets/exam-listening.js',
   './assets/official-banks.js', './assets/official-player.js',
   './assets/official-media.js',

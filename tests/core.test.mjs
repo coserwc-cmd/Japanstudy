@@ -41,9 +41,9 @@ test('All original questions have unique IDs, valid answers and complete teachin
  const questions=[...GRAMMAR,...EXAM_VOCAB,...EXAM_GRAMMAR_READING,...EXAM_LISTENING];
  assert.equal(new Set(questions.map(q=>q.id)).size,questions.length);
  questions.forEach(validateQuestion);
- assert.equal(GRAMMAR.length,60);assert.equal(EXAM_VOCAB.length,35);assert.equal(EXAM_GRAMMAR_READING.length,39);assert.equal(EXAM_LISTENING.length,28);
+ assert.equal(GRAMMAR.length,220);assert.equal(EXAM_VOCAB.length,35);assert.equal(EXAM_GRAMMAR_READING.length,39);assert.equal(EXAM_LISTENING.length,28);
  for(const q of GRAMMAR) for(const option of q.options) if(option!==q.answer) assert(q.distractorExplanations[option]?.length>5);
- for(const level of ['N5','N4','N3']) {assert.equal(VOCAB.filter(q=>q.level===level).length,30);assert.equal(KANJI.filter(q=>q.level===level).length,20);}
+ for(const level of ['N5','N4','N3']) {assert.equal(VOCAB.filter(q=>q.level===level).length,level==='N3'?300:30);assert.equal(KANJI.filter(q=>q.level===level).length,level==='N3'?180:20);assert.equal(GRAMMAR.filter(q=>q.level===level).length,level==='N3'?100:60);}
 });
 test('Conjugations distinguish exceptional godan, ichidan and irregular verbs',()=>{
  const verb=word=>VERBS.find(v=>v.word===word);

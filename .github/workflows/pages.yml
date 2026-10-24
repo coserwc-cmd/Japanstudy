@@ -28,6 +28,8 @@ jobs:
           node tests/core.test.mjs
           node tests/sync-model.test.mjs
           node tests/cloud-sync.test.mjs
+          node tests/practice-selection.test.mjs
+          node tests/word-questions.test.mjs
       - name: Build public site
         run: python3 tools/build_site.py
       - name: Upload public site package
