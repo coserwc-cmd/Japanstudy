@@ -1,4 +1,4 @@
-const CACHE = 'hiyori-static-v5';
+const CACHE = 'hiyori-static-v6';
 const OFFICIAL_CACHE = 'hiyori-official-v1';
 const FILES = [
   './', './index.html', './manifest.webmanifest',
@@ -13,7 +13,7 @@ const FILES = [
   './assets/cloud-config.js', './assets/cloud-sync.js', './assets/sync-model.js',
   './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
   './assets/import-example.json',
-  './quizzes/lesson18.html', './quizzes/full-practice.html',
+  './quizzes/lesson18.html', './quizzes/lesson24.html', './quizzes/full-practice.html',
   './quizzes/full-data.js', './quizzes/full-app.js',
   './quizzes/keigo-choice.html', './quizzes/vocab-39.html',
 ];
