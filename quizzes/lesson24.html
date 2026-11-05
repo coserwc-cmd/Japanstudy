@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f5f0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>第24课词汇 · 日和 Japanstudy</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans",sans-serif;color:#283d34;background:#f6f5f0;--ink:#283d34;--muted:#717c73;--line:#e3e5dc;--green:#3f6255;--red:#af4e46}
+*{box-sizing:border-box}body{margin:0;color:var(--ink)}main{max-width:680px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(36px + env(safe-area-inset-bottom))}
+a{color:#496959}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 18px}.back{font-size:14px;text-decoration:none;font-weight:650}
+.logo{color:#8b8e80;font-size:12px;letter-spacing:.12em}.box{background:#fffefa;border:1px solid var(--line);border-radius:22px;padding:22px 18px;box-shadow:0 7px 24px #283d340a}
+h1{font-size:30px;margin:8px 0;line-height:1.25}h2{font-size:24px;margin:10px 0 16px}.lead{line-height:1.7;color:#68736a;font-size:15px}.eyebrow{color:#986f4e;font-weight:800;font-size:12px;letter-spacing:.12em}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.pill{font-size:12px;border-radius:30px;background:#edf1e8;padding:6px 10px;font-weight:650;color:#446358}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 10px}.btn{border:0;background:#eef0e9;color:#293f34;border-radius:13px;padding:14px 12px;font:inherit;font-weight:700;min-height:50px;cursor:pointer}.primary{background:#3f6255;color:white}.outline{background:#fffefa;border:1px solid #cad4c9}.full{width:100%}button:disabled{opacity:.45}.hidden{display:none!important}
+.note{font-size:13px;color:var(--muted);line-height:1.7;margin:16px 0 0}.meta{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:13px;gap:10px}
+.track{height:8px;border-radius:10px;background:#e9eee7;overflow:hidden;margin:17px 0 22px}.fill{height:100%;background:#698978;transition:width .2s}
+.question-label{color:#79857c;text-align:center;font-size:13px}.question{font-weight:750;font-size:clamp(24px,7vw,34px);line-height:1.45;text-align:center;min-height:72px;margin:14px 0 24px;overflow-wrap:anywhere}
+.choices{display:grid;gap:10px}.choice{width:100%;text-align:left;border:1.5px solid #dbe2d9;background:#fff;border-radius:13px;padding:14px 16px;font:inherit;font-size:17px;min-height:55px;line-height:1.5;cursor:pointer}.choice.correct{border:2px solid #3b8660;background:#e9f5eb;color:#1e5f40}.choice.wrong{border:2px solid #b7564e;background:#fff0ee;color:#9f3832}.choice:disabled{opacity:1;cursor:default}
+.feedback{margin:18px 0 12px;padding:14px;border-radius:13px;line-height:1.7;font-size:15px;background:#eef2eb}.feedback.bad{background:#fbefeb}.score{font-size:48px;font-weight:800;text-align:center;line-height:1.4}
+.wrong-list{display:grid;gap:10px;margin:18px 0}.wrong-card{padding:14px;border:1px solid #e6ded8;background:#fff;border-radius:13px;line-height:1.6}.wrong-card p{font-size:14px;margin:5px 0}.red{color:#a64c41}.green{color:#2a7950}
+@media(max-width:350px){.actions{grid-template-columns:1fr}main{padding-left:10px;padding-right:10px}.box{padding:20px 13px}}
+</style>
+</head>
+<body>
+<main><div class="top"><a class="back" href="../index.html#practice">← 日和 · 返回练习</a><span class="logo">LESSON 24</span></div>
+<section id="home" class="box">
+  <div class="eyebrow">CLASSROOM VOCABULARY</div><h1>第24课 · 词汇</h1>
+  <p class="lead">三页课本的32个词汇，双向测试；第二部分重点区分长音、促音、清浊音和相似读音。</p>
+  <div class="pills"><span class="pill">32 词</span><span class="pill">双向各32题</span><span class="pill">自动记分</span><span class="pill">错题重练</span></div>
+  <div class="actions"><button id="start-a" class="btn primary">假名 → 中文</button><button id="start-b" class="btn outline">中文 → 假名</button></div>
+  <button id="saved-btn" class="btn full">练习已保存错题</button>
+  <p class="note">题目与选项每轮随机排序。遇到易混淆词时，答题后会显示正确的汉字写法。错题保存在当前网站的浏览器中，答对后自动移除。</p>
+</section>
+<section id="quiz" class="box hidden">
+ <div class="meta"><span id="mode-name"></span><span id="counter"></span></div><div class="track"><div id="bar" class="fill" style="width:0"></div></div>
+ <div class="question-label" id="q-label"></div><div class="question" id="question"></div>
+ <div id="choices" class="choices"></div>
+ <div id="feedback" class="feedback hidden" role="status" aria-live="polite"></div>
+ <button id="next" class="btn primary full hidden">下一题 →</button>
+ <button id="quit" class="btn outline full" style="margin-top:10px">返回单元首页</button>
+</section>
+<section id="result" class="box hidden">
+ <div class="eyebrow">PRACTICE COMPLETE</div><h2>完成这一轮</h2>
+ <div id="score" class="score"></div><p id="summary" class="lead" style="text-align:center"></p>
+ <div class="actions"><button id="retry" class="btn primary">本轮错题再练</button><button id="restart" class="btn outline">本部分再做一遍</button></div>
+ <button id="result-home" class="btn full">返回单元首页</button>
+ <div id="wrong-list" class="wrong-list"></div>
+</section></main>
+<script>
+"use strict";
+const W=[["おせわになりました","お世話になりました","承蒙关照；感谢一直以来的帮助",["初次见面，请多关照","好久不见","多谢款待"],["おせわになります","おせわになりまた","おせわになりしました"]],["そうべつかい","送別会","送别会",["欢迎会","新年会","交流会"],["そうべっかい","そべつかい","そうべつがい"]],["しめきり","締め切り","截止日期；截止期限",["申请时间","预订","付款手续"],["しめき","しめぎり","しまりきり"]],["ちょきんします","貯金します","存钱；储蓄",["取钱","汇款","付款"],["ちょうきんします","ちょきんしまず","ちょっきんします"]],["けっこんきねんび","結婚記念日","结婚纪念日",["结婚典礼","生日","新婚旅行"],["けこんきねんび","けっこんきねんひ","けっこんぎねんび"]],["スイーツ","スイーツ","甜点；甜食",["便当","饮料","前菜"],["スイツ","スィーツ","スイーズ"]],["もうしこみます","申し込みます","申请；报名",["取消","确认","预约座位"],["もうしこみまつ","もうしごみます","もうしこめます"]],["ゼミ","ゼミ","研讨班；研讨课",["说明会","社团活动","演讲"],["セミ","ゼーミ","ゼニ"]],["ときどき","時々","有时；偶尔",["总是","几乎不","马上"],["とぎどき","ときとき","ときどぎ"]],["サービス","サービス","服务",["免费赠品","优惠券","手续费"],["サビース","サビス","サーピス"]],["おもったより","思ったより","比想象中……；比预想的更……",["正如预想","完全没想到","比以前……"],["おもたより","おもってより","おもったよる"]],["そだてます","育てます","养育；培育",["成长","照顾","生长"],["そだちます","そたてます","そだてまつ"]],["ようい","用意","准备；预备",["计划","预约","整理"],["ようじ","よい","よてい"]],["ゆっくりします","ゆっくりします","休息放松；悠闲地过",["抓紧时间","运动","睡过头"],["ゆくりします","ゆっくりしまず","ゆっくりなります"]],["おひさしぶりです","お久しぶりです","好久不见",["一路顺风","承蒙关照","请多保重"],["おひさぶりです","おひさしぷりです","おひさしぶりてす"]],["おかげさまで","おかげさまで","托您的福；多亏您",["给您添麻烦了","请您稍等","不客气"],["おかげまで","おかけさまで","おかげさまに"]],["とまります","泊まります","住宿；留宿（如住酒店）",["返回家中","停下来（不移动）","长期居住"],["とまりまず","とめます","とまれます"]],["ちちのひ","父の日","父亲节",["母亲节","儿童节","敬老节"],["ちちのび","ちちひ","ははのひ"]],["むすめ","娘","女儿",["儿子","妹妹","妻子"],["むずめ","むすこ","むすめえ"]],["うまくいきます","うまくいきます","进展顺利；办得成功",["顺路去","做得很快","最后决定"],["うまくいけます","うまくいきまつ","うまくいきません"]],["はつおん","発音","发音",["口音","翻译","语法"],["はっおん","はつお","ぱつおん"]],["たすかります","助かります","帮了大忙；得救",["麻烦了","担心","请帮忙"],["だすかります","たすけます","たすかりまつ"]],["おれい","お礼","谢意；谢礼",["道歉","祝贺","纪念品"],["おれ","おれえ","おねがい"]],["ごちそうします","ごちそうします","请客；招待吃饭",["吃饱","预约餐厅","付小费"],["ごちそします","ごちそうしまず","ごちそうさまです"]],["おくさま","奥さま","（尊称）夫人；太太",["（自己的）妻子","女儿","母亲"],["おっくさま","おくざま","おくさまー"]],["さいご","最後","最后；末尾",["最初","最近","之前"],["さいこ","さいごう","さいしょ"]],["してんちょう","支店長","分店店长；分行经理",["总公司社长","部门部长","学校校长"],["しでんちょう","してんちょ","しちょう"]],["ごうかく","合格","考试合格；通过",["落榜","报名","毕业"],["こうかく","ごうがく","ごかく"]],["つま","妻","妻子（说自己的妻子）",["夫人（尊称他人妻子）","女儿","丈夫"],["づま","つば","つまー"]],["おにいさん","お兄さん","哥哥；（称呼）别人的哥哥",["弟弟","丈夫","父亲"],["おにさん","おねえさん","おにいざん"]],["いります","要ります","需要；要用",["进入","在某处","收到"],["はいります","いりまず","いれます"]],["ぶんぽう","文法","语法",["发音","词汇","句型"],["ぶんぼう","ぶんほう","ぶんぽ"]]],KEY="hiyori_lesson24_wrong_v1";
+const $=id=>document.getElementById(id);
+let mode="a",queue=[],i=0,score=0,roundWrong=[],locked=false,reviewing=false,lastMode="a";
+function shuffle(items){const a=items.slice();for(let n=a.length-1;n>0;n--){const j=Math.floor(Math.random()*(n+1));[a[n],a[j]]=[a[j],a[n]]}return a}
+function stored(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x.filter(z=>z&&Number.isInteger(z.i)&&z.i>=0&&z.i<W.length&&["a","b"].includes(z.mode)):[]}catch{return []}}
+function saveItems(list){try{localStorage.setItem(KEY,JSON.stringify([...new Map(list.map(x=>[x.mode+":"+x.i,x])).values()]))}catch{}}
+function removeSaved(q){saveItems(stored().filter(x=>x.mode!==q.mode||x.i!==q.i))}
+function addSaved(q){saveItems([...stored(),{mode:q.mode,i:q.i}])}
+function savedButton(){const n=stored().length;$("saved-btn").disabled=n===0;$("saved-btn").textContent=n?"练习已保存错题（"+n+"题）":"练习已保存错题（暂无）"}
+function show(id){for(const x of ["home","quiz","result"])$(x).classList.toggle("hidden",x!==id);window.scrollTo(0,0)}
+function question(index,m){const w=W[index];const answer=m==="a"?w[2]:w[0],d=m==="a"?w[3]:w[4];return{mode:m,i:index,answer,options:shuffle([answer,...d]),prompt:m==="a"?(index===16?"とまります（ホテルに）":w[0]):w[2]}}
+function start(m,selected){mode=m;lastMode=m;reviewing=!!selected;queue=shuffle(selected?selected.map(x=>question(x.i,x.mode)):W.map((_,n)=>question(n,m)));i=0;score=0;roundWrong=[];show("quiz");render()}
+function render(){locked=false;const q=queue[i];$("mode-name").textContent=reviewing?"错题重练":q.mode==="a"?"第一部分 · 假名 → 中文":"第二部分 · 中文 → 假名";$("counter").textContent=(i+1)+" / "+queue.length;$("bar").style.width=(i/queue.length*100)+"%";$("q-label").textContent=q.mode==="a"?"选出正确的中文含义":"选出正确的日语假名";$("question").textContent=q.prompt;$("feedback").classList.add("hidden");$("next").classList.add("hidden");const out=$("choices");out.replaceChildren();for(const opt of q.options){const b=document.createElement("button");b.className="choice";b.textContent=opt;b.onclick=()=>answer(opt,b);out.append(b)}}
+function answer(value,button){if(locked)return;locked=true;const q=queue[i],ok=value===q.answer;for(const b of $("choices").children){b.disabled=true;if(b.textContent===q.answer)b.classList.add("correct")}if(!ok){button.classList.add("wrong");roundWrong.push({mode:q.mode,i:q.i,chosen:value});addSaved(q)}else{score++;removeSaved(q)}const f=$("feedback");f.classList.toggle("bad",!ok);f.classList.remove("hidden");const w=W[q.i];f.textContent=(ok?"✓ 正确！":"✗ 选错了。")+" 正解："+q.answer+" ／ "+w[1]+" · "+w[2];$("next").classList.remove("hidden");$("next").textContent=i===queue.length-1?"查看成绩 →":"下一题 →";$("bar").style.width=((i+1)/queue.length*100)+"%"}
+function next(){i++;if(i>=queue.length)finish();else render()}
+function finish(){show("result");$("score").textContent=score+" / "+queue.length;$("summary").textContent="正确率 "+Math.round(100*score/queue.length)+"% · "+(roundWrong.length?"答错 "+roundWrong.length+" 题，可继续专项巩固。":"全部正确！这轮没有错题。");$("retry").disabled=roundWrong.length===0;const wrap=$("wrong-list");wrap.replaceChildren();if(roundWrong.length){const h=document.createElement("h3");h.textContent="本轮错题汇总";wrap.append(h);for(const r of roundWrong){const w=W[r.i],d=document.createElement("div");d.className="wrong-card";const title=document.createElement("strong");title.textContent=(r.mode==="a"?"假名→中文":"中文→假名")+" · "+(r.mode==="a"?w[0]:w[2]);const p=document.createElement("p");p.className="red";p.textContent="你的选择："+r.chosen;const p2=document.createElement("p");p2.className="green";p2.textContent="正确答案："+(r.mode==="a"?w[2]:w[0])+"（"+w[1]+"）";d.append(title,p,p2);wrap.append(d)}}savedButton()}
+$("start-a").onclick=()=>start("a");$("start-b").onclick=()=>start("b");$("saved-btn").onclick=()=>{const x=stored();if(x.length)start("a",x)};$("retry").onclick=()=>{if(roundWrong.length)start("a",roundWrong)};$("restart").onclick=()=>start(lastMode);$("next").onclick=next;$("quit").onclick=()=>{savedButton();show("home")};$("result-home").onclick=()=>{savedButton();show("home")};savedButton();
+</script>
+</body></html>
